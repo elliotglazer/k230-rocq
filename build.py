@@ -1,4 +1,4 @@
-"""Rebuild the frozen K230 theorem from source with Rocq 9.1."""
+"""Rebuild K230 with Rocq 9.1.0 and rocq-stdlib 9.0.0."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -11,6 +11,9 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parent
+COMPILER_VERSION = "9.1.0"
+STDLIB_VERSION = "9.0.0"
+KERNEL_TARGET = "K230.Correct230"
 
 
 def sha(path):
@@ -26,6 +29,71 @@ def below(root, relative):
     path = (root / relative).resolve()
     require(path.is_relative_to(root.resolve()), f"Path escapes its root: {relative}")
     return path
+
+
+def compiler_environment(coqc):
+    env = dict(os.environ)
+    if os.name == "nt":
+        library = subprocess.check_output([coqc, "-where"], text=True).strip()
+        try:
+            relative_library = os.path.relpath(library, ROOT)
+        except ValueError as exc:
+            raise RuntimeError("On Windows, put this checkout on the same drive as Rocq.") from exc
+        env.update(COQLIB=relative_library, ROCQLIB=relative_library)
+    return env
+
+
+def check_toolchain(coqc, work, env, require_opam=False):
+    version = subprocess.check_output([coqc, "--version"], text=True, env=env).strip()
+    require(re.search(r"version 9\.1\.0(?:\s|$)", version) is not None,
+            f"This build requires Rocq {COMPILER_VERSION}; found: {version}")
+    installed_stdlib = None
+    # Only query opam when this compiler belongs to its active switch.
+    # Native Platform installations have no opam package database.
+    switch = env.get("OPAM_SWITCH_PREFIX")
+    opam = shutil.which("opam", path=env.get("PATH"))
+    compiler_path = Path(shutil.which(coqc, path=env.get("PATH")) or coqc).resolve()
+    if switch and opam and compiler_path.is_relative_to(Path(switch).resolve()):
+        installed_stdlib = subprocess.check_output(
+            [opam, "list", "--installed", "--short", "--columns=version", "--color=never", "rocq-stdlib"],
+            text=True, env=env).strip()
+        require(installed_stdlib == STDLIB_VERSION,
+                f"Install rocq-stdlib.{STDLIB_VERSION}; found {installed_stdlib or 'no package'}.")
+    require(not require_opam or installed_stdlib == STDLIB_VERSION,
+            "--require-opam-stdlib needs the selected compiler in an active opam switch.")
+    probe = work / "ToolchainProbe.v"
+    probe.write_text("From Stdlib Require Import FinFun.\nCheck FinFun.Injective.\n", encoding="utf-8")
+    run = subprocess.run([coqc, str(probe.relative_to(ROOT))], cwd=ROOT, env=env,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         text=True, encoding="utf-8", errors="replace")
+    (work / "toolchain.log").write_text(run.stdout, encoding="utf-8")
+    require(run.returncode == 0,
+            f"Standard-library compatibility check failed. Install rocq-stdlib.{STDLIB_VERSION}.\n{run.stdout}")
+    result = {"status": "PASSED", "compiler_version": version,
+              "required_stdlib_version": STDLIB_VERSION,
+              "detected_stdlib_version": installed_stdlib,
+              "stdlib_check": "opam package version and API probe" if installed_stdlib else "API probe only; packaged installation has no opam version record"}
+    (work / "toolchain-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
+
+
+def check_kernel(coqc, requested, flags, work, env):
+    sibling = Path(coqc).resolve().with_name("coqchk.exe" if os.name == "nt" else "coqchk")
+    command = requested or (str(sibling) if sibling.is_file() else shutil.which("coqchk"))
+    require(command, "coqchk was requested but not found; pass --coqchk-command /path/to/coqchk.")
+    version = subprocess.check_output([command, "--version"], text=True, env=env).strip()
+    require(re.search(r"(?:version\s+)?9\.1\.0(?:\s|$)", version) is not None,
+            f"coqchk must match Rocq {COMPILER_VERSION}; found: {version}")
+    started = time.perf_counter()
+    with (work / "coqchk.log").open("w", encoding="utf-8") as log:
+        run = subprocess.run([command, *flags, "-silent", "-o", KERNEL_TARGET],
+                             cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
+    output = (work / "coqchk.log").read_text(encoding="utf-8", errors="replace")
+    require(run.returncode == 0 and "Modules were successfully checked" in output,
+            "Independent kernel recheck failed; see .build/coqchk.log.")
+    return {"status": "PASSED", "target": KERNEL_TARGET,
+            "compiler_version": version, "seconds": time.perf_counter() - started,
+            "log_sha256": sha(work / "coqchk.log")}
 
 
 def check_machine(manifest):
@@ -60,7 +128,18 @@ def main():
                         help="Existing checkout of the pinned upstream repository")
     parser.add_argument("--coqc", default=os.environ.get("COQC") or shutil.which("coqc"))
     parser.add_argument("--check-only", action="store_true", help="Check all source hashes and the table without compiling")
+    parser.add_argument("--check-toolchain", action="store_true", help="Check the pinned compiler and stdlib API without rebuilding the proof")
+    parser.add_argument("--require-opam-stdlib", action="store_true", help="Require an exact installed rocq-stdlib package version, as in CI")
+    parser.add_argument("--coqchk", action="store_true", help="Independently kernel-check K230.Correct230 after the clean rebuild")
+    parser.add_argument("--coqchk-command", help="Path to the coqchk executable matching the compiler")
     args = parser.parse_args()
+    require(not (args.check_only and args.check_toolchain), "Choose only one check-only mode.")
+    if args.check_toolchain:
+        require(args.coqc, f"Set COQC or pass --coqc to select Rocq {COMPILER_VERSION}.")
+        work = ROOT / ".build"
+        work.mkdir(exist_ok=True)
+        print(json.dumps(check_toolchain(args.coqc, work, compiler_environment(args.coqc), args.require_opam_stdlib), indent=2))
+        return 0
     manifest_path = ROOT / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     reference = args.reference.resolve()
@@ -77,15 +156,14 @@ def main():
     if args.check_only:
         print(f"All {len(manifest['compile_order'])} proof-source hashes and all 460 transitions match.")
         return 0
-    require(args.coqc, "Set COQC or pass --coqc to select Rocq 9.1.")
-    version = subprocess.check_output([args.coqc, "--version"], text=True).strip()
-    require(re.search(r"version 9\.1(?:\.|\s|$)", version) is not None,
-            "The frozen build targets Rocq 9.1.")
+    require(args.coqc, f"Set COQC or pass --coqc to select Rocq {COMPILER_VERSION}.")
 
     # Work on byte-identical copies. No compiled objects are read from upstream
     # or from the checked-in source directories, and every source is recompiled.
     work = ROOT / ".build"
     work.mkdir(exist_ok=True)
+    env = compiler_environment(args.coqc)
+    toolchain = check_toolchain(args.coqc, work, env, args.require_opam_stdlib)
     local_work = work / "project"
     for relative in manifest["local_files"]:
         if not relative.endswith(".v"):
@@ -106,16 +184,8 @@ def main():
     for name, relative in manifest["logical_roots"].items():
         build_root = relative if relative.startswith(".build/library/") else ".build/project/" + relative
         flags.extend(["-Q", build_root, name])
-    env = dict(os.environ)
-    if os.name == "nt":
-        library = subprocess.check_output([args.coqc, "-where"], text=True).strip()
-        try:
-            relative_library = os.path.relpath(library, ROOT)
-        except ValueError as exc:
-            raise RuntimeError("On Windows, put this checkout on the same drive as Rocq.") from exc
-        env.update(COQLIB=relative_library, ROCQLIB=relative_library)
     started = time.perf_counter()
-    result = {"status": "RUNNING", "compiler_version": version,
+    result = {"status": "RUNNING", "compiler_version": toolchain["compiler_version"], "toolchain": toolchain,
               "manifest_sha256": sha(manifest_path), "machine_sha256": manifest["machine_sha256"],
               "reference_commit": commit, "compiled": [], "closed_reports": 0}
     try:
@@ -143,6 +213,9 @@ def main():
                 require(sha(local_work / relative) == digest, f"Build copy changed: {relative}")
         for relative, item in manifest["reference_files"].items():
             require(sha(ROOT / relative) == item["sha256"], f"Dependency build copy changed: {relative}")
+        if args.coqchk:
+            print(f"Independent kernel recheck: {KERNEL_TARGET}", flush=True)
+            result["coqchk"] = check_kernel(args.coqc, args.coqchk_command, flags, work, env)
         result["status"] = "PASSED"
     except Exception as exc:
         result.update(status="FAILED", error=str(exc))

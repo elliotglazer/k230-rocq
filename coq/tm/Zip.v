@@ -1,4 +1,5 @@
-(** * Zip: list-zipper views of busycoq tapes for k230 (adapted from zf/v335/coq/SimBase.v).
+(** * Zip: list-zipper views of busycoq tapes for k230
+    (adapted from the pinned upstream ZF/verify/335/SimBase.v).
 
     [zc q l r] is the configuration in state [q] whose head is on the first cell of [r]
     ([r] read rightwards, [l] read leftwards from the head), both sides completed with

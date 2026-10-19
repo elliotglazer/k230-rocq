@@ -6,7 +6,7 @@ This repository contains a binary Turing machine and a Rocq proof of the equival
 the machine halts from the blank tape  <->  ZFC proves a contradiction.
 ```
 
-**Verified with Rocq 9.1.** The complete theorem passed a clean development build
+**Verified with Rocq 9.1.0 and rocq-stdlib 9.0.0.** The complete theorem passed a clean development build
 and a second clean build using this repository's portable script. Each build
 compiled all 216 proof sources and reported both final declarations closed
 under the global context, with no axioms. See [provenance.json](provenance.json).
@@ -44,24 +44,41 @@ The local proof sources introduce no Rocq axioms or admitted proofs. The final
 under the global context. Object-level classical logic and the axioms of ZFC are
 represented as syntax, not imported as assumptions of Rocq.
 
-One upstream utility, BusyCoq's `LibTactics.v`, declares an `inj_pair2` axiom and
-defines a `skip` tactic using `admit`. Those declarations are not used by the
-final proofs. The endpoint audit checks the actual dependencies of both final
-theorems, rather than asserting that every loaded upstream file is free of
-unrelated axiom declarations.
+One upstream utility, BusyCoq's `LibTactics.v`, declares `inj_pair2`, imports
+`Stdlib.Logic.ProofIrrelevance.proof_irrelevance` and
+`Stdlib.Logic.Eqdep.Eq_rect_eq.eq_rect_eq`, and defines a `skip` tactic using
+`admit`. Neither final theorem depends on these axioms or uses that tactic.
+`coqchk -o` lists axioms present in the loaded environment; `Print Assumptions`
+reports the actual dependencies of each theorem. Both final dependency reports
+are closed under the global context.
 
 ## Reproduce the check
 
-Install Python 3.9 or later, Git, and Rocq 9.1 with its standard library. Then run:
+Install Python 3.9 or later and Git. The pinned proof toolchain is **Rocq 9.1.0,
+rocq-stdlib 9.0.0, and OCaml 4.14.2**. For an opam installation, use an OCaml
+4.14.2 switch and install both exact package versions:
+
+```sh
+opam install coq.9.1.0 rocq-stdlib.9.0.0
+```
+
+The compiler and standard library have independent versions. Installing
+`rocq-stdlib 9.1.0` does not reproduce this build. In an activated opam
+environment, run:
 
 ```sh
 python fetch_dependency.py
-python build.py
+python build.py --coqchk --require-opam-stdlib
 ```
 
 Use `python3` if that is the Python command on your system. If `coqc` is not on
 your path, use `python build.py --coqc /path/to/coqc` or set `COQC`. On Windows,
-place this checkout on the same drive as the Rocq installation.
+place this checkout on the same drive as the Rocq installation. For a native
+Rocq Platform installation without opam metadata, omit `--require-opam-stdlib`.
+The build still checks the exact compiler version and compiles a standard-library
+API probe before starting the proof. That probe detects the incompatible
+`FinFun.Injective` change; it is not a claim to recover a package version from
+an installation without version metadata.
 
 The dependency is pinned to
 [`jeff87654/busy-beaver` at `c132d7eae8158cd3a9850ea3eb7251158c3dd821`](https://github.com/jeff87654/busy-beaver/tree/c132d7eae8158cd3a9850ea3eb7251158c3dd821).
@@ -77,7 +94,16 @@ sources into `.build`, and recompiles all 216 proof files. It never reads
 precompiled objects from the dependency checkout. Success requires both final
 assumption reports to say `Closed under the global context`, with no reported
 axioms. The result and compiler output are saved in `.build/verification-result.json`
-and `.build/verification.log`.
+and `.build/verification.log`. With `--coqchk`, the script additionally checks
+`K230.Correct230` and all its dependencies using the independent kernel checker,
+without `-admit` or `-norec`. Its output is saved in `.build/coqchk.log`, including
+the environment's axiom summary. Use `--coqchk-command /path/to/coqchk` if needed.
+
+To check the toolchain before fetching or compiling proof dependencies:
+
+```sh
+python build.py --check-toolchain
+```
 
 For a fast check of the pinned inputs without compiling:
 
@@ -85,9 +111,12 @@ For a fast check of the pinned inputs without compiling:
 python build.py --check-only --reference /path/to/busy-beaver
 ```
 
-The proof development has been checked with the Windows distribution of Rocq
-9.1. The release scripts use portable Python and Git commands; a Linux or macOS
-run has not yet been recorded.
+The [Linux workflow](.github/workflows/verify.yml) installs the pinned opam
+packages, verifies the installed standard-library version, rebuilds every proof
+source, and runs `coqchk`. It preserves the build reports and logs as a workflow
+artifact. The recorded local builds used the Windows Rocq Platform distribution;
+an independent external audit also reports a successful Linux rebuild and kernel
+recheck. A macOS run has not been recorded.
 
 ## Proof structure
 
@@ -104,11 +133,6 @@ are:
   [KUpperConsistency.v](coq/settheory/KUpperConsistency.v) for both consistency
   reductions.
 
-The 230-state version changes one unconditional logical-axiom row of the
-231-state source from `rho6(a,b)` to `rho6(a,c)`. This changes the compiled machine
-while enumerating the same axiom family. The proof checks the resulting table
-and source-program certificate directly.
-
 ## Relation to earlier constructions
 
 The machine and proof-search architecture build on the work of
@@ -118,9 +142,9 @@ The machine and proof-search architecture build on the work of
 The main mathematical improvement here is the compact theory K and its more
 efficient axiom encoding. Its interpretation retains the consistency strength
 of ZFC while reducing the theory that the machine's proof checker must recognize.
-Later changes to source scheduling, compiler sharing, and the transition table
-also contributed to the state count. The one-state reduction from 231 to 230 is
-the logical-row parameter change described above.
+Changes to source scheduling, compiler sharing, and the transition table also
+contributed to the state count. The proof checks the released table and
+source-program certificate directly.
 
 The compiler work also builds on
 [Andrew James Wade's Turing Machine Explorer](https://codeberg.org/ajwade/turing_machine_explorer).

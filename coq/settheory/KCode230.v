@@ -90,9 +90,8 @@ Proof. reflexivity. Qed.
 
 (** Frozen source: output role b, input role a, private label c, opaque
     formula code c. Both selected and local conjunctions are reversed.
-    Unchanged theory template from dynamic_role_search.formula, opt-233-231-checked.json;
-    original 231-state table SHA256 f2b60e0256328cd602c4355609f4eda60b7c072023e31f863104f57ef7047cc0.
-    The 230-state source only reparameterizes the separate rho6 logical row. *)
+    The following definitions specify the theory template checked against
+    the released source-program certificate. *)
 Definition ksubset (a b k : nat) : nat :=
   wal k (wim (wel k a) (wel k b)).
 Definition krequest (b k m : nat) : nat :=

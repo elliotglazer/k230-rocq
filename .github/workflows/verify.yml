@@ -1,0 +1,43 @@
+name: Verify K230 on Linux
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14.2"
+          dune-cache: false
+      - name: Install the pinned prover and standard library
+        run: opam install --yes coq.9.1.0 rocq-stdlib.9.0.0
+      - name: Check exact toolchain versions
+        run: opam exec -- python3 build.py --check-toolchain --require-opam-stdlib
+      - name: Fetch pinned proof dependencies
+        run: python3 fetch_dependency.py
+      - name: Check build infrastructure
+        run: python3 -m unittest discover -s tests -v
+      - name: Rebuild and independently kernel-check the proof
+        run: opam exec -- python3 build.py --require-opam-stdlib --coqchk
+      - name: Preserve verification results and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k230-linux-verification
+          if-no-files-found: warn
+          include-hidden-files: true
+          path: |
+            .build/verification-result.json
+            .build/verification.log
+            .build/toolchain-result.json
+            .build/toolchain.log
+            .build/coqchk.log

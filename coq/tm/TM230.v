@@ -1,4 +1,4 @@
-(** Adapted from Jeff's pinned TM254.v; see THIRD_PARTY.txt. *)
+(** Adapted from Jeff's pinned TM254.v; see THIRD_PARTY.md. *)
 (** * TM230: k230.tm as a busycoq [TM].
 
     States are the numbers 0..230 ([bnat 230]); state 230 is the terminal state (no row).
@@ -10,7 +10,7 @@ From BusyCoq Require Import TM.
 From K230 Require Import Table230.
 Import ListNotations.
 
-(** ** Bounded naturals (as in zf/v335/coq/ZFTM.v) *)
+(** ** Bounded naturals, following the pinned upstream ZF/verify/335/ZFTM.v. *)
 Definition bnat (k : nat) : Type := { n : nat | Nat.leb n k = true }.
 
 Definition bval {k} (x : bnat k) : nat := proj1_sig x.

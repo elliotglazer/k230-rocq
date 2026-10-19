@@ -48,6 +48,28 @@
     "checked_proof_sources": 216,
     "checked_transition_rows": 460
   },
-  "published_manifest_sha256": "58df2a2b2f4560b0fb03ce6b15cd11c5e6a0a74946fce83b2d92ab37f114e837",
-  "manifest_metadata_change_after_build": "Removed the preparatory status field. Source hashes, logical roots, machine identity, and compilation order are unchanged."
+  "manifest_metadata_change_after_build": "Removed the preparatory status field. Source hashes, logical roots, machine identity, and compilation order are unchanged.",
+  "build_requirements": {
+    "rocq": "9.1.0",
+    "rocq-stdlib": "9.0.0",
+    "ocaml": "4.14.2"
+  },
+  "initial_release_manifest_sha256": "58df2a2b2f4560b0fb03ce6b15cd11c5e6a0a74946fce83b2d92ab37f114e837",
+  "current_manifest_sha256": "bbd4694416cef144c8cad8099148a08c5a81114a81e358ad3f0d2dd5cdea6119",
+  "maintenance_update": {
+    "date": "2026-10-19",
+    "base_commit": "088a8f2eb47b0dee9e7761cc49cd411157dd5e28",
+    "proof_changes": "Comments only; Coq tokens after nested-comment removal match the base commit.",
+    "comment_only_files": [
+      "coq/tm/TM230.v",
+      "coq/tm/RMEquiv.v",
+      "coq/tm/Zip.v",
+      "coq/tm/Runtime230Core.v",
+      "coq/settheory/KCode230.v",
+      "coq/prog/ProgLib230.v"
+    ],
+    "stdlib_verification": "Linux CI checks the installed opam package version and compiles a compatibility probe. Native Platform builds run the probe and do not claim to detect an unavailable package version.",
+    "verification_workflow": ".github/workflows/verify.yml",
+    "verification_evidence": "Linux CI stores exact toolchain, clean-rebuild, and independent kernel-check reports and logs as workflow artifacts."
+  }
 }

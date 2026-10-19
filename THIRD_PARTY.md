@@ -67,8 +67,10 @@ by themselves resolve that license scope.
 Every local proof is rechecked. This list records provenance; it is not an
 additional logical assumption.
 
-The upstream BusyCoq utility `LibTactics.v` contains an `inj_pair2` axiom and a
-`skip` tactic defined using `admit`. They are unused by the final K230 proofs.
+The upstream BusyCoq utility `LibTactics.v` contains an `inj_pair2` axiom, imports
+`Stdlib.Logic.ProofIrrelevance.proof_irrelevance` and
+`Stdlib.Logic.Eqdep.Eq_rect_eq.eq_rect_eq`, and contains a `skip` tactic defined
+using `admit`. The final K230 proofs use none of these axioms or that tactic.
 The final `Print Assumptions` checks concern the dependencies of the two endpoint
 theorems. They do not claim that every declaration in every loaded upstream
 utility is axiom-free. The pinned utility is retained unchanged.

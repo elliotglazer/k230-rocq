@@ -9,7 +9,8 @@
     - [no_stray] / [reachable_clean]: reachable IPs carry no one at or beyond the walk depth
     - [wf_check_with_sound]: a boolean checker for [wf] given candidate tables.
 
-    Copied from zf/v335/coq/RMEquiv.v; only the zf2-specific lemma [zf2_wf] is removed. *)
+    Copied from the pinned upstream ZF/verify/335/RMEquiv.v;
+    only the zf2-specific lemma [zf2_wf] is removed. *)
 
 From Coq Require Import Lists.List Bool.Bool Arith.Arith Lia.
 From K230 Require Import RM.

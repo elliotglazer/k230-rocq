@@ -1,9 +1,11 @@
 (** Adapted from pinned m254 ProgLib254.v; adds a proved QT loop rotation. *)
-(** * ProgLib230: lemmas for the structured semantics of [dag230] (Dag230.v, the Wade compile of
-    zf/m254/inputs/source.py), used by Prog254.v to show that one run of the root is one
+(** * ProgLib230: lemmas for the structured semantics of [dag230] (Dag230.v),
+    adapted from the pinned upstream ZF/m254/inputs/source.py development and
+    used by Prog230.v to show that one run of the root is one
     [Enum230.enum_step].
 
-    Method (as zf/v335/coq/ProgLib.v).  Register files are related pointwise to a 9-field record
+    Method (as in the pinned upstream ZF/verify/335/ProgLib.v).
+    Register files are related pointwise to a 9-field record
     [St] ([approx]); [sem e m x m'] says every register file matching [m] runs edge [e] to exit [x]
     and a file matching [m'].  Nodes that are plain sequences are flattened ([expand]) into lists of
     "atoms" (nodes with their own lemma) by computation; atoms with control flow (while_decnz loops,

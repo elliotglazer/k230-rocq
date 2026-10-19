@@ -1,4 +1,4 @@
-(** Adapted from Jeff's pinned m254 SymExec.v; see THIRD_PARTY.txt.
+(** Adapted from Jeff's pinned m254 SymExec.v; see THIRD_PARTY.md.
     K230 changes: exact runtime state map, nonempty spare block, prefix-carry
     decrement, increment spare value one, and moving file boundary. *)
 (** * A certified symbolic run-length executor for K230.
