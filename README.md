@@ -52,6 +52,39 @@ One upstream utility, BusyCoq's `LibTactics.v`, declares `inj_pair2`, imports
 reports the actual dependencies of each theorem. Both final dependency reports
 are closed under the global context.
 
+## The theory K
+
+K replaces explicit rank machinery with one set-theoretic axiom schema. Its
+ordinary first-order presentation uses membership and equality. For any formula
+`φ(y,p,q)`, where `q` is a finite tuple of parameters, write
+
+```text
+p ⊆ u     := ∀z (z ∈ p → z ∈ u).
+Wφ(p,C)   := (∃y φ(y,p,q)) → ∃y (y ∈ C ∧ φ(y,p,q)).
+Hφ(C)     := ∀u (u ∈ C →
+               ((∃p φ(u,p,q)) ∧ ∀p (p ⊆ u → Wφ(p,C)))).
+```
+
+The theory contains the universal closures of
+
+```text
+∀a ∀x ∃C ((φ(x,a,q) → x ∈ C) ∧ Hφ(C)),
+```
+
+together with the equality axioms. Thus `C` contains the specified output `x`
+when `φ(x,a,q)` holds; every member of `C` is an output of `φ`; and `C` supplies
+witnesses whenever an input is a subset of one of its members. The condition
+`Hφ(C)` is required even when `φ(x,a,q)` is false.
+
+This presentation is named `KPrimeOrd` in the proof. The machine's falsity
+encoding uses `KPrimeOrdIR`, which also includes irreflexivity,
+`∀x ¬(x ∈ x)`. Both theories are proved equiconsistent with `StandardZFC`.
+Tagged constructions and an extensional quotient recover the required set
+theory; the reverse interpretation uses constructible-hierarchy reflection.
+See the [proof overview](docs/proof-overview.md) and the formal definitions in
+[KPrimeCore.v](coq/settheory/KPrimeCore.v) and
+[KPrimeTheory.v](coq/settheory/KPrimeTheory.v).
+
 ## Reproduce the check
 
 Install Python 3.9 or later and Git. The pinned proof toolchain is **Rocq 9.1.0,
