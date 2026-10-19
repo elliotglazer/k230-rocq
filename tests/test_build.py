@@ -1,5 +1,6 @@
 """Regression checks for toolchain detection and the independent checker."""
 import importlib.util
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -69,26 +70,29 @@ class ToolchainTests(unittest.TestCase):
 
         def run(args, **kwargs):
             seen.extend(args)
-            kwargs["stdout"].write("Modules were successfully checked\n")
+            kwargs["stdout"].write("CONTEXT SUMMARY\n===============\n* Axioms: <none>\n")
             return subprocess.CompletedProcess(args, 0)
 
         with patch.object(build.subprocess, "check_output", return_value="The Rocq Proof Checker, version 9.1.0"):
             with patch.object(build.subprocess, "run", side_effect=run):
                 result = build.check_kernel("coqc", "coqchk", ["-Q", "src", "K230"], self.work, {})
         self.assertEqual(result["status"], "PASSED")
+        self.assertEqual(result["exit_code"], 0)
+        self.assertEqual(json.loads((self.work / "coqchk-result.json").read_text())["exit_code"], 0)
         self.assertEqual(seen[-1], "K230.Correct230")
         self.assertNotIn("-admit", seen)
         self.assertNotIn("-norec", seen)
 
     def test_kernel_failure_is_not_success(self):
         def run(args, **kwargs):
-            kwargs["stdout"].write("Error: inconsistent assumptions\n")
+            kwargs["stdout"].write("Modules were successfully checked\nError: inconsistent assumptions\n")
             return subprocess.CompletedProcess(args, 1)
 
         with patch.object(build.subprocess, "check_output", return_value="The Rocq Proof Checker, version 9.1.0"):
             with patch.object(build.subprocess, "run", side_effect=run):
                 with self.assertRaisesRegex(RuntimeError, "kernel recheck failed"):
                     build.check_kernel("coqc", "coqchk", [], self.work, {})
+        self.assertEqual(json.loads((self.work / "coqchk-result.json").read_text())["exit_code"], 1)
 
 
 if __name__ == "__main__":

@@ -88,12 +88,16 @@ def check_kernel(coqc, requested, flags, work, env):
     with (work / "coqchk.log").open("w", encoding="utf-8") as log:
         run = subprocess.run([command, *flags, "-silent", "-o", KERNEL_TARGET],
                              cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
-    output = (work / "coqchk.log").read_text(encoding="utf-8", errors="replace")
-    require(run.returncode == 0 and "Modules were successfully checked" in output,
+    # Rocq 9.1.0 suppresses the success sentence in -silent mode. The
+    # checker's exit status is authoritative; record it even on failure.
+    result = {"status": "PASSED" if run.returncode == 0 else "FAILED",
+              "target": KERNEL_TARGET, "exit_code": run.returncode,
+              "compiler_version": version, "seconds": time.perf_counter() - started,
+              "log_sha256": sha(work / "coqchk.log")}
+    (work / "coqchk-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    require(run.returncode == 0,
             "Independent kernel recheck failed; see .build/coqchk.log.")
-    return {"status": "PASSED", "target": KERNEL_TARGET,
-            "compiler_version": version, "seconds": time.perf_counter() - started,
-            "log_sha256": sha(work / "coqchk.log")}
+    return result
 
 
 def check_machine(manifest):

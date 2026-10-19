@@ -41,3 +41,4 @@ jobs:
             .build/toolchain-result.json
             .build/toolchain.log
             .build/coqchk.log
+            .build/coqchk-result.json
