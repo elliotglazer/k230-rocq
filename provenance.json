@@ -1,0 +1,53 @@
+{
+  "format_version": 1,
+  "machine_states": 230,
+  "machine_symbols": 2,
+  "start_state": 0,
+  "halt_state": 230,
+  "initial_tape": "all zero",
+  "machine_sha256": "e7ccbcec074534cfd955f0ab94d16f13594e81974074309dc2ce663b9dfd7ba8",
+  "program_sites_sha256": "400fad2b1c5f99ed8490f6346ff63088ba94fc39ada376962cee2f68c092e487",
+  "reference": {
+    "url": "https://github.com/jeff87654/busy-beaver.git",
+    "commit": "c132d7eae8158cd3a9850ea3eb7251158c3dd821"
+  },
+  "proof_sources": {
+    "local": 101,
+    "upstream": 115,
+    "total": 216
+  },
+  "theorems": [
+    "K230.Correct230.tm230_halts_iff_ZFC_inconsistent",
+    "K230.Correct230.tm230_nonhalting_iff_ZFC_consistent"
+  ],
+  "internal_PA_derivation": false,
+  "original_clean_build": {
+    "status": "PASSED",
+    "compiler_version": "The Rocq Prover, version 9.1.0\ncompiled with OCaml 4.14.2",
+    "source_count": 216,
+    "reused_object_count": 0,
+    "closed_reports": 2,
+    "seconds": 1586.4978539999865,
+    "source_hashes_match_release": true
+  },
+  "standalone_build": {
+    "status": "PASSED",
+    "compiler_version": "The Rocq Prover, version 9.1.0\ncompiled with OCaml 4.14.2",
+    "source_count": 216,
+    "reused_object_count": 0,
+    "closed_reports": 2,
+    "seconds": 1549.6126974000072,
+    "source_hashes_match_release": true,
+    "manifest_at_build_sha256": "3e01ea0989042ab5ec58ceb06db4b703d3735c277d73e79e9907bd28351007fd"
+  },
+  "input_hash_check": "PASSED",
+  "dependency_retrieval": {
+    "status": "PASSED",
+    "method": "fetch_dependency.py into a fresh checkout, followed by build.py --check-only",
+    "reference_commit": "c132d7eae8158cd3a9850ea3eb7251158c3dd821",
+    "checked_proof_sources": 216,
+    "checked_transition_rows": 460
+  },
+  "published_manifest_sha256": "58df2a2b2f4560b0fb03ce6b15cd11c5e6a0a74946fce83b2d92ab37f114e837",
+  "manifest_metadata_change_after_build": "Removed the preparatory status field. Source hashes, logical roots, machine identity, and compilation order are unchanged."
+}
