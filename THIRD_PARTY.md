@@ -6,9 +6,12 @@ at commit `c132d7eae8158cd3a9850ea3eb7251158c3dd821`. Its `ZF` development verif
 Mira-Cult's 254-state construction and supplies the logical and set-theoretic
 reference libraries used here.
 
-Unchanged upstream proof sources are retrieved separately. `manifest.json`
-lists each required upstream path and SHA-256 digest. The build compiles
-byte-identical copies without modifying the checkout.
+Unchanged upstream proof sources are retrieved separately. The axiom-free
+build's `manifest.json` and the classical build's `classical/manifest.json`
+list their required upstream paths and SHA-256 digests. Each build compiles
+copies without modifying the reference checkout. The classical development
+also reuses local sources from the axiom-free verification; these remain
+subject to the attribution and license scope stated here.
 
 ## Preserved notices
 
@@ -70,10 +73,18 @@ additional logical assumption.
 The upstream BusyCoq utility `LibTactics.v` contains an `inj_pair2` axiom, imports
 `Stdlib.Logic.ProofIrrelevance.proof_irrelevance` and
 `Stdlib.Logic.Eqdep.Eq_rect_eq.eq_rect_eq`, and contains a `skip` tactic defined
-using `admit`. The final K230 proofs use none of these axioms or that tactic.
-The final `Print Assumptions` checks concern the dependencies of the two endpoint
+using `admit`. The final axiom-free K230 proofs use none of these axioms or that tactic.
+Their `Print Assumptions` checks concern the dependencies of the two endpoint
 theorems. They do not claim that every declaration in every loaded upstream
 utility is axiom-free. The pinned utility is retained unchanged.
+
+The separate `classical/` development uses Rocq's excluded middle, dependent
+unique choice, and relational choice. Its final PA-provability theorem is
+audited against those three assumptions. Its completeness argument reuses the
+Coq Library of Undecidability's classical first-order logic development, under
+the MPL 2.0 notice preserved above. See
+[classical/README.md](classical/README.md) for the theorem's scope and the
+separate build.
 
 ## Compiler provenance
 

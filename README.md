@@ -1,12 +1,24 @@
 # K230: a 230-state Turing machine for the consistency of ZFC
 
-This repository contains a binary Turing machine and a Rocq proof of the equivalence
+This repository contains a binary Turing machine and two separate Rocq developments.
+The axiom-free verification proves
 
 ```text
 the machine halts from the blank tape  <->  ZFC proves a contradiction.
 ```
 
-**Verified with Rocq 9.1.0 and rocq-stdlib 9.0.0.** The complete theorem passed a clean development build
+The classical development proves that PA proves the corresponding arithmetical
+equivalence, `Nonhalt(K230) ↔ Con(ZFC)`. It uses excluded middle and choice in
+Rocq, followed by first-order completeness. It establishes the existence of a PA
+derivation; it does not export a PA or MM0 proof certificate.
+
+| Development | Final result | Rocq assumptions | Build |
+| --- | --- | --- | --- |
+| Axiom-free verification | Machine halting iff ZFC has a contradiction proof | None in either final theorem | `python build.py --coqchk` |
+| [Classical PA-provability](classical/README.md) | `PA ⊢ Nonhalt(K230) ↔ Con(ZFC)` | Excluded middle, dependent unique choice, relational choice | `python classical/build.py --coqchk --jobs 2` |
+
+Both developments use Rocq 9.1.0 and rocq-stdlib 9.0.0, with separate build outputs
+and CI workflows. The axiom-free theorem passed a clean development build
 and a second clean build using this repository's portable script. Each build
 compiled all 216 proof sources and reported both final declarations closed
 under the global context, with no axioms. See [provenance.json](provenance.json).
@@ -19,7 +31,7 @@ state numbered 230. It starts in state 0 on an all-zero tape. The exact table is
 e7ccbcec074534cfd955f0ab94d16f13594e81974074309dc2ce663b9dfd7ba8
 ```
 
-## What the theorem says
+## Axiom-free verification
 
 The final declarations are in [Correct230.v](coq/tm/Correct230.v):
 
@@ -37,9 +49,10 @@ Corollary tm230_nonhalting_iff_ZFC_consistent :
 The right side refers to a finite derivation in its classical first-order proof
 system. See [KQuotZFC.v](coq/settheory/KQuotZFC.v) for its definition.
 
-These are external Rocq theorems. They do not assert that ZFC is consistent, and
-they are not an internal formalization of `PA ⊢ Nonhalt(K230) ↔ Con(ZFC)`.
-The local proof sources introduce no Rocq axioms or admitted proofs. The final
+These are external Rocq theorems. They do not assert that ZFC is consistent.
+The separate [classical development](classical/README.md) establishes the
+internal PA-provability result. The local proof sources for the axiom-free
+verification introduce no Rocq axioms or admitted proofs. The final
 [assumption audit](coq/tm/AuditCorrect.v) checks that both declarations are closed
 under the global context. Object-level classical logic and the axioms of ZFC are
 represented as syntax, not imported as assumptions of Rocq.
@@ -51,6 +64,24 @@ One upstream utility, BusyCoq's `LibTactics.v`, declares `inj_pair2`, imports
 `coqchk -o` lists axioms present in the loaded environment; `Print Assumptions`
 reports the actual dependencies of each theorem. Both final dependency reports
 are closed under the global context.
+
+## Classical PA-provability
+
+The endpoint
+[`PA_proves_literal230_ZFC_consistency`](classical/coq/PAModel/PALiteralZFCConsistency.v)
+proves derivability of a closed arithmetic sentence from `PA.PAeq`. The sentence
+states that this exact machine does not halt iff ZFC is consistent. The proof
+first establishes the equivalence in arbitrary PA models, including models with
+nonstandard numbers and internally finite proof or run histories. Classical
+first-order completeness then yields a PA derivation.
+
+The final theorem's Rocq assumption report lists exactly
+`Classical_Prop.classic`,
+`ClassicalUniqueChoice.dependent_unique_choice`, and
+`RelationalChoice.relational_choice`. These are assumptions of the Rocq
+metatheory, not additional axioms of the object theory PA. This development has
+its own source manifest, build directory, and Linux kernel check. See its
+[build instructions and proof outline](classical/README.md).
 
 ## The theory K
 
@@ -85,7 +116,7 @@ See the [proof overview](docs/proof-overview.md) and the formal definitions in
 [KPrimeCore.v](coq/settheory/KPrimeCore.v) and
 [KPrimeTheory.v](coq/settheory/KPrimeTheory.v).
 
-## Reproduce the check
+## Reproduce the axiom-free check
 
 Install Python 3.9 or later and Git. The pinned proof toolchain is **Rocq 9.1.0,
 rocq-stdlib 9.0.0, and OCaml 4.14.2**. For an opam installation, use an OCaml
@@ -144,12 +175,24 @@ For a fast check of the pinned inputs without compiling:
 python build.py --check-only --reference /path/to/busy-beaver
 ```
 
-The [Linux workflow](.github/workflows/verify.yml) installs the pinned opam
+The [axiom-free Linux workflow](.github/workflows/verify.yml) installs the pinned opam
 packages, verifies the installed standard-library version, rebuilds every proof
 source, and runs `coqchk`. It preserves the build reports and logs as a workflow
 artifact. The recorded local builds used the Windows Rocq Platform distribution;
 an independent external audit also reports a successful Linux rebuild and kernel
 recheck. A macOS run has not been recorded.
+
+To build and independently kernel-check the classical result with the same
+toolchain and fetched dependency, run:
+
+```sh
+python classical/build.py --coqchk --jobs 2 --require-opam-stdlib
+```
+
+Its outputs are under `.build/classical`. The root build does not import these
+objects or the classical proof sources. The
+[classical Linux workflow](.github/workflows/classical.yml) runs this check
+separately. Native Rocq Platform users can omit `--require-opam-stdlib` as above.
 
 ## Proof structure
 

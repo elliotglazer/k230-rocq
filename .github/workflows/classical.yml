@@ -1,0 +1,40 @@
+name: Verify classical PA-provability on Linux
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-classical:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14.2"
+          dune-cache: false
+      - name: Install the pinned prover and standard library
+        run: opam install --yes coq.9.1.0 rocq-stdlib.9.0.0
+      - name: Check exact toolchain versions
+        run: opam exec -- python3 classical/build.py --check-toolchain --require-opam-stdlib
+      - name: Fetch pinned proof dependencies
+        run: python3 fetch_dependency.py
+      - name: Check the classical build infrastructure
+        run: python3 -m unittest discover -s classical/tests -v
+      - name: Rebuild and independently kernel-check the classical proof
+        run: opam exec -- python3 classical/build.py --require-opam-stdlib --coqchk --jobs 4
+      - name: Preserve classical verification results and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k230-classical-linux-verification
+          if-no-files-found: warn
+          include-hidden-files: true
+          path: |
+            .build/classical/**/*.json
+            .build/classical/**/*.log

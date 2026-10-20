@@ -71,5 +71,7 @@
     "stdlib_verification": "Linux CI checks the installed opam package version and compiles a compatibility probe. Native Platform builds run the probe and do not claim to detect an unavailable package version.",
     "verification_workflow": ".github/workflows/verify.yml",
     "verification_evidence": "Linux CI stores exact toolchain, clean-rebuild, and independent kernel-check reports and logs as workflow artifacts."
-  }
+  },
+  "scope": "axiom_free_verification",
+  "classical_PA_provability": "classical/provenance.json"
 }

@@ -1,4 +1,4 @@
-name: Verify K230 on Linux
+name: Verify axiom-free K230 on Linux
 
 on:
   push:

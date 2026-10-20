@@ -1,0 +1,418 @@
+(** A complete finite primitive schedule of the literal AX prefix.
+    This certificate checks exact positions and complete coverage before the gate.
+    Operation meanings are supplied by separate verified constructor theorems. *)
+From K230 Require Import RM RMEquiv Prog230.
+From Stdlib Require Import Lists.List Bool.Bool Arith.Arith.
+Import ListNotations.
+Unset Implicit Arguments.
+
+Definition ax_edge_eqb (a b:edge):bool:=
+ match a,b with
+ | ENode x,ENode y | EInc x,EInc y | EDecnz x,EDecnz y
+ | EBreak x,EBreak y | EContinue x,EContinue y=>Nat.eqb x y
+ | EHalt,EHalt=>true | _,_=>false end.
+Fixpoint ax_path_eqb (a b:list bool):bool:=
+ match a,b with | [],[]=>true | x::a,y::b=>Bool.eqb x y && ax_path_eqb a b | _,_=>false end.
+Definition p230_ax_schedule:list(list bool*edge):=[
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;false;false], ENode 49);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;false;true;false], ENode 68);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;false;true;true;false], ENode 75);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;false;true;true;true], ENode 93);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;true;false], ENode 100);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;false;false;false], ENode 132);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;false;false;true], ENode 139);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;false;true], ENode 141);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;false;false;false], ENode 147);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;false;false;true], ENode 165);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;false;true], ENode 171);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;true;false;false;false], ENode 192);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;true;false;false;true], ENode 199);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;true;false;true], ENode 201);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;false;true;true], ENode 203);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;true;false;false], ENode 231);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;true;false;true], ENode 249);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;false;true;true;true], ENode 255);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;false;false;false;false], ENode 285);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;false;false;false;true], ENode 303);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;false;false;true;false], ENode 310);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;false;false;true;true], ENode 328);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;false;true], ENode 334);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;false;false;false], ENode 364);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;false;false;true], ENode 382);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;false;true;false], ENode 389);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;false;true;true], ENode 407);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;true;false], ENode 414);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;false;true;true], ENode 440);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;false], ENode 467);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;false;false], ENode 496);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;false;true], ENode 514);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;true;false;false], ENode 522);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;true;false;true], ENode 540);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;true;true;false], ENode 547);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;false;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;false;false;false;false], ENode 579);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;false;false;false;true], ENode 597);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;false;false;true], ENode 603);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;false;true], ENode 621);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;true;false], ENode 628);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;false;true;true;true;true;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;false;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;false;false], ENode 663);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;false;true;false], ENode 682);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;false;true;true;false], ENode 689);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;false;true;true;true], ENode 707);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;true;false], ENode 714);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;true;false;false], ENode 743);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;true;false;true], ENode 769);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;true;true;false], ENode 796);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;false;true;true;true;true], ENode 814);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;false;false;false], ENode 824);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;false;false;true], ENode 842);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;false;true;false], ENode 849);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;false;true;true], ENode 867);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;true;false], ENode 874);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;false;false;false], ENode 905);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;false;true], ENode 923);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;false;false], ENode 951);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;true;false;false], ENode 980);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;false;true;true;true], ENode 998);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;true;false], ENode 1025);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;false;true;true;true;true], ENode 1043);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;false], ENode 1052);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;false;false], ENode 1081);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;false;true], ENode 1099);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;true;false;false], ENode 1107);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;true;false;true], ENode 1125);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;true;true;false], ENode 1132);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;false;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;false;false;false;false], ENode 1164);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;false;false;false;true], ENode 1182);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;false;false;true], ENode 1188);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;false;true], ENode 1206);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;true;false], ENode 1213);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;false;true;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;false;false], ENode 1243);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;false;true;false], ENode 1262);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;false;true;true;false], ENode 1269);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;false;true;true;true], ENode 1287);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;true;false], ENode 1294);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;false;false;false], ENode 1323);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;false;false;true], ENode 1349);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;false;true;false], ENode 1376);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;false;true;true], ENode 1394);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;true;false;false], ENode 1402);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;true;false;true], ENode 1420);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;true;true;false], ENode 1427);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;false;true;true;true;true], ENode 1445);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;false;false;false], ENode 1454);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;false;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;false;true], ENode 1481);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;false;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;false;false], ENode 1513);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;false;true], ENode 1531);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;false;false;false], ENode 1541);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;false;false;true], ENode 1559);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;false;true;false], ENode 1566);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;false;true;true], ENode 1584);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;true;false], ENode 1591);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;false;false;false], ENode 1621);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;false;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;false;true], ENode 1648);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;false;false], ENode 1677);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;false;true;false], ENode 1696);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;false;true;true;false], ENode 1703);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;false;true;true;true], ENode 1721);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;true;false], ENode 1728);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;false;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;false;false], ENode 1759);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;false;true], ENode 1777);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;true;false;false], ENode 1785);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;true;false;true], ENode 1803);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;true;true;false], ENode 1810);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;false;false;false;false], ENode 1840);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;false;false;false;true], ENode 1858);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;false;false;true], ENode 1864);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;false;true], ENode 1882);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;true;false], ENode 1889);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;false;false;false], ENode 1918);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;false;false;true], ENode 1944);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;false;true;false], ENode 1971);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;false;true;true], ENode 1989);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;true;false;false], ENode 1997);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;true;false;true], ENode 2015);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;true;true;false], ENode 2022);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;false;true;true;true;true;true;true], ENode 2040);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;true;false], ENode 2047);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;true;true;false], ENode 2074);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;true;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;false;true;true;true;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;false;false], ENode 2105);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;false;true;false], ENode 2124);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;false;true;true;false], ENode 2131);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;false;true;true;true], ENode 2149);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;true;false], ENode 2156);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;false;false;false], ENode 2187);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;false;false;true], ENode 2205);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;false;true;false], ENode 2212);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;false;true;true], ENode 2230);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;true;false], ENode 2237);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;true;false;false], ENode 2266);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;true;false;true], ENode 2292);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;true;true;false], ENode 2319);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;false;true;true;true;true], ENode 2337);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;false;false], ENode 2347);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;false;true;false], ENode 2366);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;false;true;true;false], ENode 2373);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;false;true;true;true], ENode 2391);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;true;false], ENode 2398);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;false;false;false], ENode 2429);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;false;true], ENode 2447);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;false;false], ENode 2475);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;true;false;false], ENode 2504);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;false;true;true;true], ENode 2522);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;true;false], ENode 2549);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;false;true;true;true;true;true;true], ENode 2567);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;false;false], ENode 2577);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;false;true], ENode 2595);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;false;false;false], ENode 2604);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;false;false;true], ENode 2622);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;false;true;false], ENode 2629);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;false;true;true], ENode 2647);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;true;false], ENode 2654);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;false], ENode 2683);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;false;false], ENode 2712);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;false;true], ENode 2730);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;false;false;false], ENode 2739);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;false;false;true], ENode 2757);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;false;true;false], ENode 2764);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;false;true;true], ENode 2782);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;true;false], ENode 2789);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;true;false;false], ENode 2817);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;true;false;true], ENode 2835);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;true;true;false], ENode 2842);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;false;true;true;true;true], ENode 2860);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;false;false;false], ENode 2870);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;false;false;true], ENode 2888);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;false;true;false], ENode 2895);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;false;true;true], ENode 2913);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;false;false], ENode 2922);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;false;true], ENode 2940);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;true;false;false], ENode 2948);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;true;false;true], ENode 2966);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;true;true;false], ENode 2973);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;false;false;false;false], ENode 3003);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;false;false;false;true], ENode 3021);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;false;false;true], ENode 3027);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;false;true], ENode 3045);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;true;false], ENode 3052);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;false;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;false;false], ENode 3081);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;false;true;false], ENode 3108);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;false;false;false], ENode 3139);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;false;false;true], ENode 3157);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;false;true;false], ENode 3164);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;false;true;true], ENode 3182);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;true;false;false], ENode 3190);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;true;false;true], ENode 3208);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;true;true;false], ENode 3215);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;false;true;true;true], ENode 3233);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;false;false;false], ENode 3242);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;false;false;true], ENode 3260);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;false;true;false], ENode 3267);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;false;true;true], ENode 3285);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;true;false], ENode 3292);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;false;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;false;false;false], ENode 3322);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;false;true], ENode 3340);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;true;false], ENode 3367);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;true;true;false;false], ENode 3395);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;false;true;true;true], ENode 3413);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;false;false;false], ENode 3442);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;false;true], ENode 3460);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;false;false], ENode 3488);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;true;false;false], ENode 3517);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;false;true;true;true;true;true;true;true], ENode 3535);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;false;false], ENode 3563);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;false;true;false], ENode 3590);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;false;false], ENode 3620);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;false;true;false], ENode 3647);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;false;false;false], ENode 3678);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;false;true], ENode 3696);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;true;false], ENode 3723);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;true;true;false;false], ENode 3751);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;false;true;true;true], ENode 3769);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;false;false;false], ENode 3798);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;false;true], ENode 3816);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;false;false], ENode 3844);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;true;false;false], ENode 3873);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;false;true;true;true;true;true], ENode 3891);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;false;false], ENode 3919);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;false;true;false], ENode 3946);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;false;false;false], ENode 3977);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;false;true], ENode 3995);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;true;false], ENode 4022);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;true;true;false;false], ENode 4050);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;false;true;true;true], ENode 4068);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;false;false;false], ENode 4097);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;false;true], ENode 4115);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;false;false], ENode 4143);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;true;false;false], ENode 4172);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;false;true;true;true;true;true;true;true;true;true], ENode 4190);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;false;false], ENode 4220);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;false;true;false], ENode 4239);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;false;true;true;false], ENode 4246);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;false;true;true;true], ENode 4264);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;true;false], ENode 4271);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;false;false], ENode 4299);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;false;true], ENode 4317);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;false;false], ENode 4326);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;false;true;false], ENode 4345);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;false;true;true;false], ENode 4352);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;false;true;true;true], ENode 4370);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;true;false], ENode 4377);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;false;false;false], ENode 4406);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;false;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;false;true], ENode 4433);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;false;false], ENode 4462);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;false;true;false], ENode 4481);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;false;true;true;false], ENode 4488);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;false;true;true;true], ENode 4506);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;true;false], ENode 4513);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;false;true;true;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;false;false], ENode 4544);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;false;true], ENode 4562);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;false;false], ENode 4571);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;false;true;false], ENode 4590);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;false;true;true;false], ENode 4597);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;false;true;true;true], ENode 4615);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;true;false], ENode 4622);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;true;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;false;true;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;false;false;false], ENode 4652);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;false;false;true;false], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;false;false;true;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;false;true], ENode 4679);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;false;false;false], ENode 4709);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;false;true], ENode 4727);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;true;false], ENode 4754);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;true;true;false;false], ENode 4782);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;false;true;true;true], ENode 4800);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;false;false;false], ENode 4830);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;false;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;false;true], ENode 4848);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;true;false], ENode 4875);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;true;true;false;false], ENode 4903);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;true;true;false;true], EInc 1);
+ ([true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;false;true;true;true], ENode 4921)
+ ].
+Definition p230_ax_schedule_root:list bool:=[true;true;true;false;true;false;false;true;false;false;true;false].
+Definition p230_ax_schedule_gate:list bool:=[true;true;true;false;true;false;false;true;false;false;true;false;true;true;true;true;true;false;true;true;true;true].
+Fixpoint ax_schedule_lookup path entries:option edge:=
+ match entries with | []=>None | (p,e)::rest=>if ax_path_eqb path p then Some e else ax_schedule_lookup path rest end.
+Fixpoint ax_prefix_cut fuel e path:option(bool*list edge):=
+ if ax_path_eqb path p230_ax_schedule_gate then Some(true,[]) else
+ match ax_schedule_lookup path p230_ax_schedule with
+ | Some e=>Some(false,[e])
+ | None=>match fuel,e with
+   | S k,ENode n=>let '(a,b):=nodes p230 n in
+     match ax_prefix_cut k a (path++[false]) with
+     | Some(true,ops)=>Some(true,ops)
+     | Some(false,prefix_ops)=>match ax_prefix_cut k b (path++[true]) with
+       | Some(stop,suffix_ops)=>Some(stop,prefix_ops++suffix_ops) | None=>None end
+     | None=>None end
+   | _,_=>None end end.
+Definition ax_site_position_valid (entry:list bool*edge):bool:=
+ let '(path,reference):=entry in
+ match fol p230 (ENode(root p230)) path with
+ | Some e=>ax_edge_eqb e reference
+ | None=>false end.
+Theorem p230_ax_schedule_all_positions:forallb ax_site_position_valid p230_ax_schedule=true.
+Proof. vm_compute;reflexivity. Qed.
+Theorem p230_ax_schedule_covers_prefix:
+ ax_prefix_cut 40 (ENode 46) p230_ax_schedule_root=
+ Some(true,map snd p230_ax_schedule).
+Proof. vm_compute;reflexivity. Qed.
+Theorem p230_ax_schedule_start:
+ fol p230 (ENode(root p230)) p230_ax_schedule_root=Some(ENode 46).
+Proof. vm_compute;reflexivity. Qed.
+Theorem p230_ax_schedule_end:
+ fol p230 (ENode(root p230)) p230_ax_schedule_gate=Some(ENode 4947).
+Proof. vm_compute;reflexivity. Qed.
+Print Assumptions p230_ax_schedule_all_positions.
+Print Assumptions p230_ax_schedule_covers_prefix.
+Print Assumptions p230_ax_schedule_start.
+Print Assumptions p230_ax_schedule_end.
