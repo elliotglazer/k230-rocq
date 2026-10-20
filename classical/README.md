@@ -47,26 +47,34 @@ context. Classical proof sources and objects do not enter that build.
 ## Build and independently check
 
 Run these commands from the repository root. Install Python 3.9 or later, Git,
-and the pinned toolchain: Rocq 9.1.0, rocq-stdlib 9.0.0, and OCaml 4.14.2.
+and the pinned toolchain: Rocq 9.1.0, rocq-stdlib 9.0.0, Equations 1.3.1 for
+Rocq 9.1, and OCaml 4.14.2.
 In an OCaml 4.14.2 opam switch:
 
 ```sh
-opam install coq.9.1.0 rocq-stdlib.9.0.0
+opam repository add rocq-released https://rocq-prover.org/opam/released
+opam install coq.9.1.0 rocq-stdlib.9.0.0 rocq-equations.1.3.1+9.1
 python fetch_dependency.py
-opam exec -- python classical/build.py --coqchk --jobs 2 --require-opam-stdlib
+opam exec -- python classical/build.py --coqchk --jobs 2 --require-opam-dependencies
 ```
 
 Use `python3` if required by your installation. The standard-library version is
 independent of the compiler version. Installing rocq-stdlib 9.1.0 changes the
 library API and does not reproduce this build.
 
+The classical completeness dependency imports Equations. The exact package
+[`rocq-equations.1.3.1+9.1`](https://github.com/rocq-prover/opam/blob/master/released/packages/rocq-equations/rocq-equations.1.3.1%2B9.1/opam)
+supports Rocq 9.1 and is also the version in the corresponding official
+Rocq Platform release. The axiom-free build does not need this plugin.
+
 `--jobs` limits the number of compiler processes running at once. The examples
 use two to limit memory use; the Linux workflow uses four. Adjust this value to
 the available memory and CPU capacity.
 
 For native Rocq Platform installations without opam metadata, omit
-`--require-opam-stdlib`. The builder still checks the compiler version and
-compiles the standard-library API probe. If needed, supply `--coqc /path/to/coqc`
+`--require-opam-dependencies`. The builder still checks the compiler version and
+compiles both the standard-library API probe and an Equations definition. If
+needed, supply `--coqc /path/to/coqc`
 and `--coqchk-command /path/to/coqchk`. On Windows, keep the checkout and Rocq
 installation on the same drive.
 
@@ -81,7 +89,7 @@ python classical/build.py --reference /path/to/busy-beaver --coqchk --jobs 2
 For a toolchain check without a proof build, or an input check without compiling:
 
 ```sh
-python classical/build.py --check-toolchain --require-opam-stdlib
+python classical/build.py --check-toolchain --require-opam-dependencies
 python classical/build.py --check-only --reference /path/to/busy-beaver
 ```
 

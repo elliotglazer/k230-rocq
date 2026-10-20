@@ -18,16 +18,18 @@ jobs:
         with:
           ocaml-compiler: "4.14.2"
           dune-cache: false
-      - name: Install the pinned prover and standard library
-        run: opam install --yes coq.9.1.0 rocq-stdlib.9.0.0
-      - name: Check exact toolchain versions
-        run: opam exec -- python3 classical/build.py --check-toolchain --require-opam-stdlib
+      - name: Install the pinned prover, standard library, and Equations
+        run: |
+          opam repository add --yes rocq-released https://rocq-prover.org/opam/released
+          opam install --yes coq.9.1.0 rocq-stdlib.9.0.0 rocq-equations.1.3.1+9.1
+      - name: Check exact toolchain and dependency versions
+        run: opam exec -- python3 classical/build.py --check-toolchain --require-opam-dependencies
       - name: Fetch pinned proof dependencies
         run: python3 fetch_dependency.py
       - name: Check the classical build infrastructure
         run: python3 -m unittest discover -s classical/tests -v
       - name: Rebuild and independently kernel-check the classical proof
-        run: opam exec -- python3 classical/build.py --require-opam-stdlib --coqchk --jobs 4
+        run: opam exec -- python3 classical/build.py --require-opam-dependencies --coqchk --jobs 4
       - name: Preserve classical verification results and logs
         if: always()
         uses: actions/upload-artifact@v4

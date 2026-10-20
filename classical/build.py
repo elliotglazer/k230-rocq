@@ -16,6 +16,8 @@ ROOT = CLASSICAL.parent
 WORK = ROOT / ".build/classical"
 TARGET = "PAModel.PALiteralZFCConsistency"
 MACHINE_SHA256 = "e7ccbcec074534cfd955f0ab94d16f13594e81974074309dc2ce663b9dfd7ba8"
+EQUATIONS_PACKAGE = "rocq-equations"
+EQUATIONS_VERSION = "1.3.1+9.1"
 ALLOWED_AXIOMS = frozenset({
     "Classical_Prop.classic",
     "ClassicalUniqueChoice.dependent_unique_choice",
@@ -35,6 +37,50 @@ SPEC = importlib.util.spec_from_file_location("k230_axiom_free_build", ROOT / "b
 shared = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(shared)
 require, sha = shared.require, shared.sha
+
+
+def check_dependencies(coqc, work, env, require_opam=False):
+    """Load Equations and exercise its plugin before compiling proof sources."""
+    result = {"status": "RUNNING", "package": EQUATIONS_PACKAGE,
+              "required_version": EQUATIONS_VERSION, "detected_version": None}
+    try:
+        switch = env.get("OPAM_SWITCH_PREFIX")
+        opam = shutil.which("opam", path=env.get("PATH"))
+        compiler = Path(shutil.which(coqc, path=env.get("PATH")) or coqc).resolve()
+        if switch and opam and compiler.is_relative_to(Path(switch).resolve()):
+            version = subprocess.check_output(
+                [opam, "list", "--installed", "--short", "--columns=version", "--color=never", EQUATIONS_PACKAGE],
+                text=True, env=env).strip()
+            result["detected_version"] = version or None
+            require(version == EQUATIONS_VERSION,
+                    f"Install {EQUATIONS_PACKAGE}.{EQUATIONS_VERSION}; found {version or 'no package'}.")
+        require(not require_opam or result["detected_version"] == EQUATIONS_VERSION,
+                "--require-opam-dependencies needs the selected compiler in an active opam switch "
+                f"with {EQUATIONS_PACKAGE}.{EQUATIONS_VERSION}.")
+        probe = work / "DependenciesProbe.v"
+        probe.write_text(
+            "From Equations Require Import Equations.\n"
+            "Equations dependency_probe (n : nat) : nat :=\n"
+            "dependency_probe O := O;\n"
+            "dependency_probe (S n) := S (dependency_probe n).\n"
+            "Example dependency_probe_ok : dependency_probe 2 = 2 := eq_refl.\n",
+            encoding="utf-8")
+        run = subprocess.run([coqc, str(probe.relative_to(ROOT))], cwd=ROOT, env=env,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, encoding="utf-8", errors="replace")
+        (work / "dependencies.log").write_text(run.stdout, encoding="utf-8")
+        result["exit_code"] = run.returncode
+        require(run.returncode == 0,
+                f"Equations dependency check failed. Install {EQUATIONS_PACKAGE}.{EQUATIONS_VERSION} "
+                f"for the selected Rocq compiler before building the classical proof.\n{run.stdout}")
+        result.update(status="PASSED", check="opam package version and plugin probe" if result["detected_version"]
+                      else "plugin probe only; packaged installation has no opam version record")
+    except Exception as exc:
+        result.update(status="FAILED", error=str(exc))
+        raise
+    finally:
+        (work / "dependencies-result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return result
 
 
 def safe_relative(value):
@@ -256,8 +302,10 @@ def main(argv=None):
     parser.add_argument("--coqc", default=os.environ.get("COQC") or shutil.which("coqc"))
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--check-only", action="store_true", help="Check source hashes, source maps and machine without compiling")
-    modes.add_argument("--check-toolchain", action="store_true", help="Check the pinned compiler and stdlib without rebuilding")
+    modes.add_argument("--check-toolchain", action="store_true", help="Check the pinned compiler, stdlib and Equations plugin without rebuilding")
     parser.add_argument("--require-opam-stdlib", action="store_true", help="Require exact rocq-stdlib.9.0.0 package evidence, as in CI")
+    parser.add_argument("--require-opam-dependencies", action="store_true",
+                        help="Require exact opam versions for both stdlib and rocq-equations, as in classical CI")
     parser.add_argument("--coqchk", action="store_true", help="Independently recheck the full classical endpoint and its dependencies")
     parser.add_argument("--coqchk-command", help="Path to the matching coqchk executable")
     parser.add_argument("--jobs", type=int, default=1, help="Maximum simultaneous compilations, following dependency edges")
@@ -273,7 +321,10 @@ def main(argv=None):
     try:
         if args.check_toolchain:
             require(args.coqc, f"Set COQC or pass --coqc to select Rocq {shared.COMPILER_VERSION}")
-            result["toolchain"] = shared.check_toolchain(args.coqc, WORK, shared.compiler_environment(args.coqc), args.require_opam_stdlib)
+            env = shared.compiler_environment(args.coqc)
+            result["toolchain"] = shared.check_toolchain(args.coqc, WORK, env,
+                                                        args.require_opam_stdlib or args.require_opam_dependencies)
+            result["dependencies"] = check_dependencies(args.coqc, WORK, env, args.require_opam_dependencies)
         else:
             manifest_path = CLASSICAL / "manifest.json"
             manifest_digest = sha(manifest_path)
@@ -284,9 +335,11 @@ def main(argv=None):
             result["source_count"] = len(manifest["sources"])
             if not args.check_only:
                 require(args.coqc, f"Set COQC or pass --coqc to select Rocq {shared.COMPILER_VERSION}")
-                prepare_work()
                 env = shared.compiler_environment(args.coqc)
-                result["toolchain"] = shared.check_toolchain(args.coqc, WORK, env, args.require_opam_stdlib)
+                result["toolchain"] = shared.check_toolchain(args.coqc, WORK, env,
+                                                            args.require_opam_stdlib or args.require_opam_dependencies)
+                result["dependencies"] = check_dependencies(args.coqc, WORK, env, args.require_opam_dependencies)
+                prepare_work()
                 copy_sources(manifest, reference)
                 flags = logical_flags(manifest)
                 compile_sources(manifest, args.coqc, flags, env, args.jobs, result)

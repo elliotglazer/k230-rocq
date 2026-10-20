@@ -31,6 +31,10 @@ subject to the attribution and license scope stated here.
   [LICENSES/Wade-MIT-0.txt](LICENSES/Wade-MIT-0.txt).
 - Rocq and its standard library are separately installed dependencies with
   the notices supplied by their distributions.
+- The classical build also requires the separately installed
+  [Equations plugin](https://github.com/rocq-prover/equations/tree/v1.3.1-9.1),
+  whose distribution supplies its LGPL notice. No Equations source files are
+  vendored here.
 
 No root license or explicit license notice was found in the pinned reference's
 custom `ZF/m254`, `ZF/stdzf/coq`, `ZF/stdzf_r3/zfc`, or `ZF/stdzf_r3/regcon`

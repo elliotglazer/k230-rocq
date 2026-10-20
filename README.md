@@ -183,16 +183,21 @@ an independent external audit also reports a successful Linux rebuild and kernel
 recheck. A macOS run has not been recorded.
 
 To build and independently kernel-check the classical result with the same
-toolchain and fetched dependency, run:
+toolchain and fetched dependency, install its additional Equations dependency
+and run:
 
 ```sh
-python classical/build.py --coqchk --jobs 2 --require-opam-stdlib
+opam repository add rocq-released https://rocq-prover.org/opam/released
+opam install rocq-equations.1.3.1+9.1
+python classical/build.py --coqchk --jobs 2 --require-opam-dependencies
 ```
 
 Its outputs are under `.build/classical`. The root build does not import these
 objects or the classical proof sources. The
 [classical Linux workflow](.github/workflows/classical.yml) runs this check
-separately. Native Rocq Platform users can omit `--require-opam-stdlib` as above.
+separately. Native Rocq Platform users can omit `--require-opam-dependencies`;
+the builder still checks the compiler, standard-library API, and Equations
+availability before compiling the proof.
 
 ## Proof structure
 

@@ -1,6 +1,7 @@
 """Tests for the classical build's proof boundary and source-map checks."""
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
 import importlib.util
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -44,6 +45,8 @@ def manifest():
         "format_version": 1,
         "target": build.TARGET,
         "machine_sha256": build.MACHINE_SHA256,
+        "reference": {"url": "https://github.com/jeff87654/busy-beaver.git",
+                      "commit": "c132d7eae8158cd3a9850ea3eb7251158c3dd821"},
         "allowed_axioms": sorted(build.ALLOWED_AXIOMS),
         "logical_roots": {"PAModel": "src/PAModel"},
         "sources": {
@@ -177,6 +180,97 @@ class KernelTests(unittest.TestCase):
         result = json.loads((self.work / "coqchk-result.json").read_text())
         self.assertEqual(result["status"], "FAILED")
         self.assertEqual(result["exit_code"], 1)
+
+
+class DependencyTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = scratch_directory()
+        self.work = self.temporary.__enter__()
+
+    def tearDown(self):
+        self.temporary.__exit__(None, None, None)
+
+    @patch.object(build.shutil, "which", return_value=None)
+    def test_missing_equations_fails_with_install_instruction(self, which):
+        error = 'Cannot find a physical path bound to logical path Equations with prefix Equations.'
+        with patch.object(build.subprocess, "run", return_value=subprocess.CompletedProcess([], 1, error)):
+            with self.assertRaisesRegex(RuntimeError, r"Install rocq-equations\.1\.3\.1\+9\.1"):
+                build.check_dependencies("coqc", self.work, {})
+        result = json.loads((self.work / "dependencies-result.json").read_text())
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["exit_code"], 1)
+        self.assertIn(error, (self.work / "dependencies.log").read_text())
+
+    @patch.object(build.shutil, "which", return_value=None)
+    def test_probe_exercises_equations_and_does_not_invent_a_native_version(self, which):
+        with patch.object(build.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "")):
+            result = build.check_dependencies("coqc", self.work, {})
+        source = (self.work / "DependenciesProbe.v").read_text()
+        self.assertIn("From Equations Require Import Equations.", source)
+        self.assertIn("Equations dependency_probe", source)
+        self.assertIn("Example dependency_probe_ok", source)
+        self.assertEqual(result["status"], "PASSED")
+        self.assertIsNone(result["detected_version"])
+
+    def test_wrong_opam_plugin_version_fails_before_running_probe(self):
+        compiler = str(self.work / "bin/coqc")
+        env = {"OPAM_SWITCH_PREFIX": str(self.work)}
+        with patch.object(build.shutil, "which", side_effect=lambda name, **kw: "opam" if name == "opam" else compiler):
+            with patch.object(build.subprocess, "check_output", return_value="1.3.1+9.0") as query:
+                with patch.object(build.subprocess, "run") as run:
+                    with self.assertRaisesRegex(RuntimeError, r"found 1\.3\.1\+9\.0"):
+                        build.check_dependencies(compiler, self.work, env, require_opam=True)
+                    self.assertEqual(query.call_args.args[0][-1], "rocq-equations")
+                    run.assert_not_called()
+
+    @patch.object(build.shutil, "which", return_value=None)
+    def test_ci_requires_package_version_evidence(self, which):
+        with patch.object(build.subprocess, "run") as run:
+            with self.assertRaisesRegex(RuntimeError, "active opam switch"):
+                build.check_dependencies("coqc", self.work, {}, require_opam=True)
+            run.assert_not_called()
+
+    def run_main_fixture(self, arguments, dependency_error=None):
+        classical = self.work / "classical"
+        classical.mkdir()
+        (classical / "manifest.json").write_text(json.dumps(manifest()))
+        work = self.work / ".build/classical"
+        with patch.multiple(build, ROOT=self.work, CLASSICAL=classical, WORK=work):
+            with patch.object(build, "check_inputs"):
+                with patch.object(build.shared, "compiler_environment", return_value={}):
+                    with patch.object(build.shared, "check_toolchain", return_value={"status": "PASSED"}) as toolchain:
+                        with patch.object(build, "check_dependencies", side_effect=dependency_error,
+                                          return_value={"status": "PASSED"}) as dependencies:
+                            with patch.object(build, "prepare_work") as prepare:
+                                with patch.object(build, "compile_sources") as compile_sources:
+                                    with redirect_stdout(io.StringIO()):
+                                        code = build.main(arguments)
+        return code, toolchain, dependencies, prepare, compile_sources, work
+
+    def test_missing_plugin_stops_regular_build_before_source_copy_or_compilation(self):
+        code, _, dependencies, prepare, compile_sources, work = self.run_main_fixture(
+            ["--coqc", "coqc"], RuntimeError("Equations dependency check failed"))
+        self.assertEqual(code, 1)
+        dependencies.assert_called_once()
+        prepare.assert_not_called()
+        compile_sources.assert_not_called()
+        self.assertEqual(json.loads((work / "verification-result.json").read_text())["status"], "FAILED")
+
+    def test_check_only_does_not_require_or_probe_equations(self):
+        code, toolchain, dependencies, prepare, compile_sources, _ = self.run_main_fixture(["--check-only"])
+        self.assertEqual(code, 0)
+        toolchain.assert_not_called()
+        dependencies.assert_not_called()
+        prepare.assert_not_called()
+        compile_sources.assert_not_called()
+
+    def test_toolchain_mode_checks_all_exact_dependency_versions(self):
+        code, toolchain, dependencies, _, compile_sources, _ = self.run_main_fixture(
+            ["--check-toolchain", "--coqc", "coqc", "--require-opam-dependencies"])
+        self.assertEqual(code, 0)
+        self.assertTrue(toolchain.call_args.args[-1])
+        self.assertTrue(dependencies.call_args.args[-1])
+        compile_sources.assert_not_called()
 
 
 if __name__ == "__main__":
